@@ -5,27 +5,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Global variable for the server IP
-String serverIp = "100.69.35.110";
-
-// Function to update serverIp periodically
-Future<void> updateServerIp() async {
-  try {
-    final url = Uri.parse('http://$serverIp:3000/ip');
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      String newIp = response.body.trim();
-      if (newIp.isNotEmpty && newIp != serverIp) {
-        print("Updating serverIp from $serverIp to $newIp");
-        serverIp = newIp;
-      }
-    } else {
-      print("Failed to update serverIp, status: ${response.statusCode}");
-    }
-  } catch (e) {
-    print("Error updating serverIp: $e");
-  }
-}
+// Global variable for the server URL
+String serverUrl = "https://1da9-103-13-43-154.ngrok-free.app";
 
 // A simple ChatMessage model with an optional reply.
 class ChatMessage {
@@ -42,11 +23,6 @@ ValueNotifier<Map<String, List<ChatMessage>>> localConversationsNotifier =
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MessagingApp());
-
-  // Update the server IP every 5 minutes.
-  Timer.periodic(Duration(minutes: 5), (_) {
-    updateServerIp();
-  });
 }
 
 class MessagingApp extends StatelessWidget {
@@ -99,7 +75,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       isLoading = true;
       error = '';
     });
-    final url = 'http://$serverIp:3000/auth/register';
+    final url = '$serverUrl/auth/register';
     try {
       final response = await http.post(Uri.parse(url),
           headers: {'Content-Type': 'application/json'},
@@ -185,7 +161,7 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
   }
 
   void connectSocket() {
-    socket = IO.io('ws://$serverIp:3000', IO.OptionBuilder()
+    socket = IO.io(serverUrl, IO.OptionBuilder()
         .setTransports(['websocket'])
         .disableAutoConnect()
         .build());
@@ -199,13 +175,11 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
     socket!.on('receiveMessage', (data) {
       String sender = data['sender'];
       String message = data['message'];
-      // Since the message is pre-formatted, we don't need separate reply handling.
       ChatMessage chatMessage =
           ChatMessage(sender: sender, message: message);
       Map<String, List<ChatMessage>> updatedConversations =
           Map.from(localConversationsNotifier.value);
       updatedConversations.putIfAbsent(sender, () => []);
-      // Check if a similar message already exists
       if (!updatedConversations[sender]!
           .any((m) => m.message == message && m.sender == sender)) {
         updatedConversations[sender]!.add(chatMessage);
@@ -327,7 +301,7 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
     setState(() {
       isLoading = true;
     });
-    final url = Uri.parse('http://$serverIp:3000/users/search?query=$query');
+    final url = Uri.parse('$serverUrl/users/search?query=$query');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -427,7 +401,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
   @override
   void initState() {
     super.initState();
-    // We no longer add an extra socket listener here;
     // UI updates via the global localConversationsNotifier.
   }
 
@@ -438,37 +411,36 @@ class _ConversationScreenState extends State<ConversationScreen> {
   }
 
   void sendMessage() {
-  if (_controller.text.isNotEmpty) {
-    // Pre-format the message if it's a reply
-    String finalMessage = _controller.text;
-    if (_messageToReply != null) {
-      finalMessage = "Re: ${_messageToReply!.message}\n${_controller.text}";
+    if (_controller.text.isNotEmpty) {
+      // Pre-format the message if it's a reply
+      String finalMessage = _controller.text;
+      if (_messageToReply != null) {
+        finalMessage = "Re: ${_messageToReply!.message}\n${_controller.text}";
+      }
+      // Emit the pre-formatted message as a single string
+      widget.socket!.emit('sendMessage', {
+        'sender': widget.currentUser,
+        'receiver': widget.partner,
+        'message': finalMessage,
+      });
+      // Update the local conversation storage with the formatted message
+      Map<String, List<ChatMessage>> updatedConversations =
+          Map.from(localConversationsNotifier.value);
+      updatedConversations.putIfAbsent(widget.partner, () => []);
+      ChatMessage newMessage = ChatMessage(
+        sender: widget.currentUser,
+        message: finalMessage,
+        reply: _messageToReply?.message,
+      );
+      updatedConversations[widget.partner]!.add(newMessage);
+      localConversationsNotifier.value = updatedConversations;
+
+      _controller.clear();
+      setState(() {
+        _messageToReply = null;
+      });
     }
-    // Emit the pre-formatted message as a single string
-    widget.socket!.emit('sendMessage', {
-      'sender': widget.currentUser,
-      'receiver': widget.partner,
-      'message': finalMessage,
-    });
-    // Update the local conversation storage with the formatted message
-    Map<String, List<ChatMessage>> updatedConversations =
-        Map.from(localConversationsNotifier.value);
-    updatedConversations.putIfAbsent(widget.partner, () => []);
-    ChatMessage newMessage = ChatMessage(
-      sender: widget.currentUser,
-      message: finalMessage,
-      reply: _messageToReply?.message,
-    );
-    updatedConversations[widget.partner]!.add(newMessage);
-    localConversationsNotifier.value = updatedConversations;
-
-    _controller.clear();
-    setState(() {
-      _messageToReply = null;
-    });
   }
-}
-
 
   void _showReplyOptions(ChatMessage message) {
     showModalBottomSheet(
@@ -606,7 +578,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
 class LogScreen extends StatelessWidget {
   // This screen fetches the logs from your server endpoint /logs
   Future<String> fetchLogs() async {
-    final url = Uri.parse('http://$serverIp:3000/logs');
+    final url = Uri.parse('$serverUrl/logs');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       return response.body;
@@ -640,7 +612,7 @@ class LogScreen extends StatelessWidget {
 class PublicIpScreen extends StatelessWidget {
   // This screen fetches the public IP from your server endpoint /ip
   Future<String> fetchPublicIp() async {
-    final url = Uri.parse('http://$serverIp:3000/ip');
+    final url = Uri.parse('$serverUrl/ip');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       return response.body.trim();
