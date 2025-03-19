@@ -3,7 +3,7 @@
 This document provides a comprehensive overview of the application. The app supports real-time, private conversations with features such as message replies and dynamic public IP updates. The project overcomes CGNAT and dynamic IP challenges by exposing the local server via reverse proxy solutions (e.g., ngrok) and uses robust backend and frontend technologies. Deployment is managed using Terraform.
 
 ---
-<span style="background-color: red; color: white; padding: 2px 4px; border-radius: 4px;">Red Background</span>
+## THIS APP IS DOWN AT THIS MOMENT , WORKING ON SERVER SIDE
 
 
 ---
