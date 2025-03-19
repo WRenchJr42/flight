@@ -59,7 +59,7 @@ The private messaging application is designed for real-time, secure communicatio
 
 ```mermaid
 flowchart TD
-    A[Mobile App (Flutter)] -- "HTTP/WS" --> B[Reverse Proxy (ngrok)]
+    A[Mobile App (Flutter)] -- "`HTTP/WS`" --> B[Reverse Proxy (ngrok)]
     B -- "Forwards Traffic" --> C[Node.js Server (Express, Socket.IO)]
     C -- "Stores Data" --> D[PostgreSQL & Redis]
 
