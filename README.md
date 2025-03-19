@@ -59,9 +59,9 @@ The private messaging application is designed for real-time, secure communicatio
 
 ```mermaid
 flowchart TD
-    A[Mobile App\n(Flutter)] -->|HTTP WebSocket| B[Reverse Proxy\n(ngrok)]
-    B -->|Forwards Traffic| C[Node.js Server\nExpress, Socket.IO]
-    C -->|Stores Data| D[PostgreSQL & Redis]
+    A[Mobile] --> B[Proxy]
+    B --> C[Server]
+    C --> D[Database]
 ```
 ### DataFlow Diagram
 ```mermaid
