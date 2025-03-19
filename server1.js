@@ -122,10 +122,4 @@ server.listen(3000, '0.0.0.0', () => {
   console.log('Server running on port 3000 (IPv4). Socket.IO is available at /socket.io/');
 });
 
-/*
-IMPORTANT:
-When testing with raw WebSocket clients (like wscat or curl), always connect using Socket.IO's protocol endpoint.
-For example:
-    ws://YOUR_PUBLIC_IP:3000/socket.io/?EIO=4&transport=websocket
-This ensures the proper Socket.IO handshake.
-*/
+
