@@ -1,6 +1,6 @@
-# Project Overview: Private Real-Time Messaging App
+# Project Overview: flight - Real-Time Messaging App
 
-This document provides a comprehensive overview of the private messaging application. The app supports real-time, private conversations with features such as message replies and dynamic public IP updates. The project overcomes CGNAT and dynamic IP challenges by exposing the local server via reverse proxy solutions (e.g., ngrok) and uses robust backend and frontend technologies. Deployment is managed using Terraform.
+This document provides a comprehensive overview of the application. The app supports real-time, private conversations with features such as message replies and dynamic public IP updates. The project overcomes CGNAT and dynamic IP challenges by exposing the local server via reverse proxy solutions (e.g., ngrok) and uses robust backend and frontend technologies. Deployment is managed using Terraform.
 
 ---
 
@@ -35,7 +35,7 @@ The private messaging application is designed for real-time, secure communicatio
 |                    | socket_io_client                               | Flutter package to connect to Socket.IO for real-time messaging          |
 |                    | http, shared_preferences                       | HTTP communication and local storage for persistent settings             |
 | **Reverse Proxy**  | ngrok                                          | Exposes local server behind CGNAT/dynamic IP to a public URL               |
-| **Deployment**     | Terraform                                      | Infrastructure-as-code tool to provision cloud resources                  |
+| **Deployment**     | Terraform                                      | Infrastructure-as-code tool to provision on-prem resources                  |
 
 ---
 
@@ -63,7 +63,10 @@ flowchart TD
     B -->|"Forwards Traffic"| C["Node.js Server (Express, Socket.IO)"]
     C -->|"Stores Data"| D["PostgreSQL & Redis"]
 ```
+---
+
 ### DataFlow Diagram
+
 ```mermaid
 sequenceDiagram
     participant U as User Mobile App
