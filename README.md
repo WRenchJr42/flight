@@ -25,6 +25,34 @@ This document provides a comprehensive overview of the application. The app supp
 The private messaging application is designed for real-time, secure communication between users, similar to WhatsApp. Users register with a chosen username, and conversations are private between the involved parties. Message replies are supported with clear visual context for both sender and receiver. The project addresses challenges like dynamic public IPs and CGNAT by using a reverse proxy (ngrok) and an automated IP update mechanism.
 
 ---
+## Architecture & Design
+
+### High-Level Architecture
+
+```mermaid
+flowchart TD
+    A["Mobile App (Flutter)"] -->|"HTTP WS"| B["Reverse Proxy (ngrok)"]
+    B -->|"Forwards Traffic"| C["Node.js Server (Express, Socket.IO)"]
+    C -->|"Stores Data"| D["PostgreSQL & Redis"]
+```
+---
+
+### DataFlow Diagram
+
+```mermaid
+sequenceDiagram
+    participant U as User Mobile App
+    participant NP as Reverse Proxy (ngrok)
+    participant S as Node.js Server
+    participant DB as PostgreSQL/Redis
+    U->>NP: Sends Registration / Message Request
+    NP->>S: Forwards Request
+    S->>DB: Validates/Inserts/FETCH Data
+    DB-->>S: Returns Data
+    S-->>NP: Sends Response
+    NP-->>U: Response Delivered
+```
+---
 
 ## Technologies Used
 
@@ -55,31 +83,3 @@ The private messaging application is designed for real-time, secure communicatio
 | **Dynamic IP Handling**   | A dedicated endpoint (/ip) reads the public IP from a file and updates the app automatically every 5 minutes        |
 
 ---
-
-## Architecture & Design
-
-### High-Level Architecture
-
-```mermaid
-flowchart TD
-    A["Mobile App (Flutter)"] -->|"HTTP WS"| B["Reverse Proxy (ngrok)"]
-    B -->|"Forwards Traffic"| C["Node.js Server (Express, Socket.IO)"]
-    C -->|"Stores Data"| D["PostgreSQL & Redis"]
-```
----
-
-### DataFlow Diagram
-
-```mermaid
-sequenceDiagram
-    participant U as User Mobile App
-    participant NP as Reverse Proxy (ngrok)
-    participant S as Node.js Server
-    participant DB as PostgreSQL/Redis
-    U->>NP: Sends Registration / Message Request
-    NP->>S: Forwards Request
-    S->>DB: Validates/Inserts/FETCH Data
-    DB-->>S: Returns Data
-    S-->>NP: Sends Response
-    NP-->>U: Response Delivered
-```
