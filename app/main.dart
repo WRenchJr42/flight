@@ -5,10 +5,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Global variable for the server URL
 String serverUrl = "https://1da9-103-13-43-154.ngrok-free.app";
 
-// A simple ChatMessage model with an optional reply.
 class ChatMessage {
   final String sender;
   final String message;
@@ -16,7 +14,6 @@ class ChatMessage {
   ChatMessage({required this.sender, required this.message, this.reply});
 }
 
-// Global local storage for conversation messages using a ValueNotifier.
 ValueNotifier<Map<String, List<ChatMessage>>> localConversationsNotifier =
     ValueNotifier({});
 
@@ -412,18 +409,15 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   void sendMessage() {
     if (_controller.text.isNotEmpty) {
-      // Pre-format the message if it's a reply
       String finalMessage = _controller.text;
       if (_messageToReply != null) {
         finalMessage = "Re: ${_messageToReply!.message}\n${_controller.text}";
       }
-      // Emit the pre-formatted message as a single string
       widget.socket!.emit('sendMessage', {
         'sender': widget.currentUser,
         'receiver': widget.partner,
         'message': finalMessage,
       });
-      // Update the local conversation storage with the formatted message
       Map<String, List<ChatMessage>> updatedConversations =
           Map.from(localConversationsNotifier.value);
       updatedConversations.putIfAbsent(widget.partner, () => []);
@@ -576,7 +570,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
 }
 
 class LogScreen extends StatelessWidget {
-  // This screen fetches the logs from your server endpoint /logs
   Future<String> fetchLogs() async {
     final url = Uri.parse('$serverUrl/logs');
     final response = await http.get(url);
@@ -610,7 +603,6 @@ class LogScreen extends StatelessWidget {
 }
 
 class PublicIpScreen extends StatelessWidget {
-  // This screen fetches the public IP from your server endpoint /ip
   Future<String> fetchPublicIp() async {
     final url = Uri.parse('$serverUrl/ip');
     final response = await http.get(url);
